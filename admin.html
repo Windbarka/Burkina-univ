@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin — BurkinaUniv</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Lora:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --b0:#060810; --b1:#0b0e1a; --b2:#0f1422; --bc:#192035; --bc2:#1e2740;
+  --amber:#f5a623; --amber-l:#f7bc5a; --amber-10:rgba(245,166,35,.1); --amber-20:rgba(245,166,35,.2);
+  --emerald:#10b981; --emerald-l:#34d399; --emerald-10:rgba(16,185,129,.1); --emerald-20:rgba(16,185,129,.2);
+  --rouge:#ef4444; --rouge-10:rgba(239,68,68,.1); --rouge-20:rgba(239,68,68,.2);
+  --t0:#f1f3fa; --t1:#c8cde0; --t2:#7a839e; --t3:#3e4560;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --r:14px; --r-sm:10px; --r-lg:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:var(--b0);color:var(--t0);min-height:100vh;padding:24px 16px 60px;}
+h1{font-family:'Lora',serif;font-size:28px;color:var(--amber);margin-bottom:4px;}
+.sub{font-size:13px;color:var(--t2);margin-bottom:32px;}
+/* LOGIN */
+.login-wrap{max-width:380px;margin:80px auto;}
+.login-card{background:var(--bc);border:1px solid var(--line2);border-radius:var(--r-lg);padding:32px;}
+.login-card h2{font-family:'Lora',serif;font-size:22px;margin-bottom:6px;text-align:center;}
+.login-card p{font-size:13px;color:var(--t2);text-align:center;margin-bottom:24px;}
+.fgroup{margin-bottom:14px;}
+.fgroup label{display:block;font-size:12px;font-weight:700;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em;}
+.fgroup input{width:100%;padding:11px 14px;background:var(--b2);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--t0);font-size:14px;font-family:'Outfit',sans-serif;outline:none;transition:.2s;}
+.fgroup input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-10);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border-radius:var(--r);font-size:14px;font-weight:700;border:none;cursor:pointer;transition:.2s;font-family:'Outfit',sans-serif;}
+.btn--amber{background:linear-gradient(135deg,var(--amber),#f97316);color:#000;}
+.btn--amber:hover{opacity:.88;transform:translateY(-1px);}
+.btn--ghost{background:transparent;color:var(--t1);border:1px solid var(--line2);}
+.btn--ghost:hover{border-color:var(--amber);color:var(--amber);}
+.btn--emerald{background:linear-gradient(135deg,var(--emerald),#38bdf8);color:#000;}
+.btn--rouge{background:var(--rouge-10);color:#f87171;border:1px solid var(--rouge-20);}
+.btn--full{width:100%;}
+.btn--sm{padding:7px 14px;font-size:12px;}
+/* LAYOUT ADMIN */
+.admin-wrap{max-width:900px;margin:0 auto;display:none;}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+.admin-title{font-family:'Lora',serif;font-size:24px;color:var(--amber);}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+@media(max-width:600px){.admin-grid{grid-template-columns:1fr;}}
+.card{background:var(--bc);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;}
+.card__title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--t2);margin-bottom:16px;}
+.stat-big{font-family:'Lora',serif;font-size:40px;color:var(--amber);font-weight:700;}
+.stat-label{font-size:12px;color:var(--t2);margin-top:2px;}
+/* GÉNÉRER CODES */
+.gen-form{display:flex;flex-direction:column;gap:10px;}
+.gen-row{display:flex;gap:8px;flex-wrap:wrap;}
+.select-field{flex:1;padding:10px 12px;background:var(--b2);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--t0);font-family:'Outfit',sans-serif;font-size:13px;outline:none;}
+.select-field:focus{border-color:var(--amber);}
+.nb-input{width:80px;padding:10px 12px;background:var(--b2);border:1px solid var(--line);border-radius:var(--r-sm);color:var(--t0);font-family:'Outfit',sans-serif;font-size:13px;outline:none;text-align:center;}
+/* CODES TABLE */
+.codes-table-wrap{overflow-x:auto;}
+.codes-table{width:100%;border-collapse:collapse;font-size:13px;}
+.codes-table th{text-align:left;padding:8px 10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);border-bottom:1px solid var(--line);}
+.codes-table td{padding:10px;border-bottom:1px solid var(--line);color:var(--t1);vertical-align:middle;}
+.codes-table tr:last-child td{border-bottom:none;}
+.code-val{font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--amber);letter-spacing:1px;}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:800;}
+.status--dispo{background:var(--emerald-10);color:var(--emerald-l);border:1px solid var(--emerald-20);}
+.status--utilisé{background:var(--rouge-10);color:#f87171;border:1px solid var(--rouge-20);}
+.status--expiré{background:rgba(255,255,255,.05);color:var(--t3);border:1px solid var(--line);}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bc);border:1px solid var(--line);border-radius:var(--r);padding:12px 18px;font-size:13px;font-weight:600;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:280px;}
+.toast--show{transform:translateY(0);opacity:1;}
+.toast--ok{border-color:var(--emerald-20);color:var(--emerald-l);}
+.toast--err{border-color:rgba(239,68,68,.3);color:#f87171;}
+.toast--inf{border-color:var(--amber-20);color:var(--amber-l);}
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.tab{padding:10px 18px;background:transparent;border:none;color:var(--t2);font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;margin-bottom:-1px;}
+.tab--active{color:var(--amber);border-bottom-color:var(--amber);}
+.tab-panel{display:none;}
+.tab-panel--active{display:block;}
+.empty-state{text-align:center;padding:32px;color:var(--t2);font-size:13px;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-btn{padding:5px 14px;border-radius:100px;border:1px solid var(--line);background:transparent;color:var(--t2);font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;transition:.2s;}
+.filter-btn:hover,.filter-btn--active{border-color:var(--amber);color:var(--amber);}
+.copy-btn{background:var(--amber-10);border:1px solid var(--amber-20);color:var(--amber-l);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:.2s;}
+.copy-btn:hover{background:var(--amber);color:#000;}
+.wa-btn{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:#34d399;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:.2s;text-decoration:none;display:inline-block;}
+.wa-btn:hover{background:#25d366;color:#fff;}
+.del-btn{background:var(--rouge-10);border:1px solid var(--rouge-20);color:#f87171;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:.2s;}
+.del-btn:hover{background:var(--rouge);color:#fff;}
+.section-divider{height:1px;background:var(--line);margin:20px 0;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div style="text-align:center;margin-bottom:28px;">
+    <div style="font-size:36px;margin-bottom:8px;">🔐</div>
+    <h1 style="text-align:center;">Admin BurkinaUniv</h1>
+    <p class="sub" style="text-align:center;margin-bottom:0;">Panneau de gestion privé</p>
+  </div>
+  <div class="login-card">
+    <h2>Connexion</h2>
+    <p>Accès réservé à l'administrateur</p>
+    <div class="fgroup">
+      <label>Mot de passe admin</label>
+      <input type="password" id="login-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div id="login-err" style="color:#f87171;font-size:13px;margin-bottom:12px;display:none;">❌ Mot de passe incorrect.</div>
+    <button class="btn btn--amber btn--full" onclick="doLogin()">🔓 Accéder au panneau</button>
+    <p style="font-size:11px;color:var(--t3);text-align:center;margin-top:12px;">Cette page est confidentielle. Ne partagez pas le lien.</p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">🎓 Admin BurkinaUniv</div>
+      <div style="font-size:12px;color:var(--t2);">Gestion des codes d'accès IA</div>
+    </div>
+    <button class="btn btn--ghost btn--sm" onclick="doLogout()">🚪 Déconnexion</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="admin-grid" id="stats-grid">
+    <div class="card">
+      <div class="card__title">Codes disponibles</div>
+      <div class="stat-big" id="stat-dispo">—</div>
+      <div class="stat-label">Prêts à être envoyés</div>
+    </div>
+    <div class="card">
+      <div class="card__title">Codes utilisés</div>
+      <div class="stat-big" id="stat-used" style="color:var(--emerald-l);">—</div>
+      <div class="stat-label">Sessions complétées</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab tab--active" onclick="switchAdminTab('generer',this)">⚡ Générer des codes</button>
+    <button class="tab" onclick="switchAdminTab('codes',this)">📋 Tous les codes</button>
+  </div>
+
+  <!-- TAB: GÉNÉRER -->
+  <div class="tab-panel tab-panel--active" id="tab-generer">
+    <div class="card">
+      <div class="card__title">Générer de nouveaux codes</div>
+      <div class="gen-form">
+        <div class="gen-row">
+          <select class="select-field" id="gen-service">
+            <option value="entrainement">🎯 Entraînement QCM — 100 FCFA</option>
+            <option value="examen">⏱️ Simulation Examen — 200 FCFA</option>
+            <option value="fiche">📚 Fiche de Révision — 150 FCFA</option>
+            <option value="correction">✅ Correction IA — 50 FCFA</option>
+            <option value="cv">📄 Génération CV IA — 1000 FCFA</option>
+            <option value="cv">📄 Génération CV IA — 1000 FCFA</option>
+          </select>
+          <input type="number" class="nb-input" id="gen-nb" value="5" min="1" max="50" title="Nombre de codes"/>
+        </div>
+        <button class="btn btn--amber" onclick="genererCodes()">⚡ Générer les codes</button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div id="gen-result" style="display:none;">
+        <div style="font-size:12px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">✅ Codes générés — à envoyer via WhatsApp</div>
+        <div id="gen-codes-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <button class="btn btn--ghost btn--sm" style="margin-top:12px;" onclick="copierTousCodes()">📋 Copier tous les codes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TOUS LES CODES -->
+  <div class="tab-panel" id="tab-codes">
+    <div class="card">
+      <div class="card__title">Historique des codes</div>
+      <div class="filter-row">
+        <button class="filter-btn filter-btn--active" onclick="filterCodes('tous',this)">Tous</button>
+        <button class="filter-btn" onclick="filterCodes('disponible',this)">Disponibles</button>
+        <button class="filter-btn" onclick="filterCodes('utilisé',this)">Utilisés</button>
+      </div>
+      <div class="codes-table-wrap">
+        <table class="codes-table">
+          <thead><tr><th>Code</th><th>Service</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="codes-tbody"><tr><td colspan="5" class="empty-state">Chargement...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA",
+  authDomain:"burkinauniv.firebaseapp.com",
+  projectId:"burkinauniv",
+  storageBucket:"burkinauniv.firebasestorage.app",
+  messagingSenderId:"1016400582124",
+  appId:"1:1016400582124:web:9966aa034c532521089cc9"
+});
+const db = getFirestore(app);
+window.__db = db;
+window.__fb = { collection, doc, getDoc, getDocs, setDoc, deleteDoc, query, orderBy, serverTimestamp };
+window.__fbOk = true;
+</script>
+
+<script>
+// ═══════════════════════
+// MOT DE PASSE ADMIN
+// ═══════════════════════
+const ADMIN_PWD = "burkinauniv2024admin"; // Change ce mot de passe !
+
+function doLogin() {
+  const pwd = document.getElementById("login-pwd").value;
+  if (pwd === ADMIN_PWD) {
+    document.getElementById("login-wrap").style.display = "none";
+    document.getElementById("admin-wrap").style.display = "block";
+    loadStats();
+    loadCodes();
+  } else {
+    document.getElementById("login-err").style.display = "block";
+  }
+}
+window.doLogin = doLogin;
+
+function doLogout() {
+  document.getElementById("login-wrap").style.display = "block";
+  document.getElementById("admin-wrap").style.display = "none";
+  document.getElementById("login-pwd").value = "";
+}
+window.doLogout = doLogout;
+
+// ═══════════════════════
+// TOAST
+// ═══════════════════════
+function showToast(msg, type="inf") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast toast--"+type+" toast--show";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("toast--show"), 4000);
+}
+
+// ═══════════════════════
+// TABS
+// ═══════════════════════
+function switchAdminTab(name, btn) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("tab-panel--active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("tab--active"));
+  document.getElementById("tab-"+name).classList.add("tab-panel--active");
+  btn.classList.add("tab--active");
+  if (name === "codes") loadCodes();
+}
+window.switchAdminTab = switchAdminTab;
+
+// ═══════════════════════
+// GÉNÉRATION CODES
+// ═══════════════════════
+const SERVICE_LABELS = {
+  entrainement: "🎯 Entraînement QCM",
+  examen: "⏱️ Simulation Examen",
+  fiche: "📚 Fiche de Révision",
+  correction: "✅ Correction IA",
+  cv: "📄 Génération CV IA"
+};
+const SERVICE_PRIX = { entrainement:100, examen:200, fiche:150, correction:50, cv:1000 };
+
+function genererCodeUnique() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "BU-";
+  for (let i=0;i<8;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+
+async function genererCodes() {
+  const service = document.getElementById("gen-service").value;
+  const nb = parseInt(document.getElementById("gen-nb").value) || 1;
+  if (!window.__fbOk) { showToast("Firebase non disponible","err"); return; }
+
+  showToast("⚡ Génération en cours...","inf");
+  const { doc, setDoc, serverTimestamp } = window.__fb;
+  const codes = [];
+
+  for (let i=0; i<nb; i++) {
+    const code = genererCodeUnique();
+    const date = new Date().toLocaleString("fr-FR",{timeZone:"Africa/Ouagadougou"});
+    try {
+      await setDoc(doc(window.__db,"codes_ia",code), {
+        code, service,
+        serviceLabel: SERVICE_LABELS[service],
+        prix: SERVICE_PRIX[service],
+        statut: "disponible",
+        dateCreation: serverTimestamp(),
+        dateCreationStr: date,
+        dateUtilisation: null
+      });
+      codes.push(code);
+    } catch(e) { console.error(e); }
+  }
+
+  // Afficher les codes générés
+  const list = document.getElementById("gen-codes-list");
+  list.innerHTML = "";
+  codes.forEach(code => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(245,166,35,.05);border:1px solid rgba(245,166,35,.15);border-radius:8px;flex-wrap:wrap;";
+    row.innerHTML = `
+      <span style="font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#f5a623;flex:1;">${code}</span>
+      <span style="font-size:11px;color:#7a839e;">${SERVICE_LABELS[service]}</span>
+      <button class="copy-btn" onclick="copierCode('${code}')">📋 Copier</button>
+      <a class="wa-btn" href="https://wa.me/?text=${encodeURIComponent(`Bonjour ! Voici votre code d'accès BurkinaUniv IA :\n\n🔑 Code : ${code}\nService : ${SERVICE_LABELS[service]}\n\nRendez-vous sur votre site pour l'utiliser.`)}" target="_blank">📲 WhatsApp</a>
+    `;
+    list.appendChild(row);
+  });
+
+  document.getElementById("gen-result").style.display = "block";
+  showToast(`✅ ${nb} code(s) généré(s) !`,"ok");
+  loadStats();
+}
+window.genererCodes = genererCodes;
+
+function copierCode(code) {
+  navigator.clipboard.writeText(code).then(() => showToast("📋 Code copié !","ok"));
+}
+window.copierCode = copierCode;
+
+function copierTousCodes() {
+  const rows = document.querySelectorAll("#gen-codes-list span[style*='Courier']");
+  const codes = Array.from(rows).map(r => r.textContent).join("\n");
+  navigator.clipboard.writeText(codes).then(() => showToast("📋 Tous les codes copiés !","ok"));
+}
+window.copierTousCodes = copierTousCodes;
+
+// ═══════════════════════
+// CHARGER STATS
+// ═══════════════════════
+async function loadStats() {
+  if (!window.__fbOk) return;
+  const { collection, getDocs } = window.__fb;
+  try {
+    const snap = await getDocs(collection(window.__db,"codes_ia"));
+    let dispo=0, used=0;
+    snap.forEach(d => {
+      if (d.data().statut==="disponible") dispo++;
+      else if (d.data().statut==="utilisé") used++;
+    });
+    document.getElementById("stat-dispo").textContent = dispo;
+    document.getElementById("stat-used").textContent = used;
+  } catch(e) { console.error(e); }
+}
+
+// ═══════════════════════
+// CHARGER CODES
+// ═══════════════════════
+let allCodes = [];
+let filterActif = "tous";
+
+async function loadCodes() {
+  if (!window.__fbOk) return;
+  const { collection, getDocs, query, orderBy } = window.__fb;
+  const tbody = document.getElementById("codes-tbody");
+  tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Chargement...</td></tr>`;
+  try {
+    const snap = await getDocs(collection(window.__db,"codes_ia"));
+    allCodes = [];
+    snap.forEach(d => allCodes.push({id:d.id,...d.data()}));
+    allCodes.sort((a,b) => (b.dateCreationStr||"").localeCompare(a.dateCreationStr||""));
+    renderCodes();
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="5" class="empty-state">Erreur de chargement.</td></tr>`; }
+}
+
+function filterCodes(filter, btn) {
+  filterActif = filter;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("filter-btn--active"));
+  btn.classList.add("filter-btn--active");
+  renderCodes();
+}
+window.filterCodes = filterCodes;
+
+function renderCodes() {
+  const tbody = document.getElementById("codes-tbody");
+  let filtered = allCodes;
+  if (filterActif !== "tous") filtered = allCodes.filter(c=>c.statut===filterActif);
+  if (!filtered.length) { tbody.innerHTML=`<tr><td colspan="5" class="empty-state">Aucun code trouvé.</td></tr>`; return; }
+
+  tbody.innerHTML = filtered.map(c => `
+    <tr>
+      <td><span class="code-val">${c.code}</span></td>
+      <td style="font-size:12px;color:var(--t2);">${c.serviceLabel||c.service}</td>
+      <td><span class="status-badge status--${c.statut==='disponible'?'dispo':c.statut}">${c.statut==='disponible'?'✅ Disponible':c.statut==='utilisé'?'🔴 Utilisé':'⚫ Expiré'}</span></td>
+      <td style="font-size:11px;color:var(--t3);">${c.dateCreationStr||"—"}</td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button class="copy-btn" onclick="copierCode('${c.code}')">📋</button>
+        ${c.statut==='disponible'?`<a class="wa-btn" href="https://wa.me/?text=${encodeURIComponent(`🔑 Votre code BurkinaUniv : ${c.code}\nService : ${c.serviceLabel||c.service}`)}" target="_blank">📲</a>`:''}
+        <button class="del-btn" onclick="supprimerCode('${c.id}')">🗑️</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function supprimerCode(id) {
+  if (!confirm("Supprimer ce code ?")) return;
+  const { doc, deleteDoc } = window.__fb;
+  try {
+    await deleteDoc(doc(window.__db,"codes_ia",id));
+    allCodes = allCodes.filter(c=>c.id!==id);
+    renderCodes();
+    loadStats();
+    showToast("🗑️ Code supprimé","ok");
+  } catch(e) { showToast("Erreur suppression","err"); }
+}
+window.supprimerCode = supprimerCode;
+</script>
+</body>
+</html>
