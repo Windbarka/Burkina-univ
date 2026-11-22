@@ -135,7 +135,7 @@ const P = [
  {id:"abo-elite",c:"abonnements",i:"👑",nom:"Abonnement Elite — à vie",prix:45000,d:"Tout Pro, accès à vie, futurs packs inclus"}
 ];
 const CATS = [["concours","Concours"],["filieres","Filières"],["abonnements","Abonnements"]];
-let cat = "concours", user = null;
+let cat = "concours", user = null, nomUser = "";
 
 function go(v){
   document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
@@ -172,7 +172,7 @@ async function buy(p, btn){
   try {
     await setDoc(doc(db,"achats",ref), { uid:user.uid, ref, productId:p.id, produit:p.nom, prix:p.prix, statut:"en attente", createdAt:serverTimestamp() });
     $("s-nom").textContent = p.nom; $("s-prix").textContent = fcfa(p.prix); $("s-ref").textContent = ref;
-    const msg = "Bonjour, je souhaite acheter : " + p.nom + "\nPrix : " + fcfa(p.prix) + "\nRéférence : " + ref + "\nIdentifiant : " + user.uid;
+    const msg = "Bonjour, je souhaite acheter : " + p.nom + "\nPrix : " + fcfa(p.prix) + "\nRéférence : " + ref + "\nNom : " + nomUser + "\nTéléphone : " + user.email.split("@")[0];
     $("s-wa").href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
     $("sheet").classList.add("on");
     loadOrders();
@@ -209,7 +209,8 @@ async function loadOrders(){
 async function loadProfile(){
   try {
     const s = await getDoc(doc(db,"users",user.uid)); const p = s.exists() ? s.data() : {};
-    $("hi").textContent = "Bonjour " + (p.nom || "");
+    nomUser = p.nom || "";
+    $("hi").textContent = "Bonjour " + nomUser;
     const box = $("prof"); box.innerHTML = "";
     [["Nom",p.nom],["Téléphone",p.telephone],["Université",p.universite],["Filière",p.filiere],["Niveau",p.niveau]].forEach(([k,v]) => {
       const r = el("div","kv"); r.appendChild(el("span","",k)); r.appendChild(el("span","",v || "—")); box.appendChild(r);
