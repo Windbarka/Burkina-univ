@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Diagnostic</title>
+<style>
+body{font-family:sans-serif;background:#060810;color:#f1f3fa;padding:16px}
+button{padding:14px;width:100%;font-size:16px;border:0;border-radius:10px;background:#f5a623;font-weight:800}
+pre{white-space:pre-wrap;word-break:break-all;background:#192035;padding:12px;border-radius:10px;font-size:13px}
+</style>
+</head>
+<body>
+<h2>Diagnostic IA</h2>
+<button id="go">Lancer le test</button>
+<pre id="out">Appuie sur le bouton.</pre>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({ apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA", authDomain:"burkinauniv.firebaseapp.com", projectId:"burkinauniv", storageBucket:"burkinauniv.firebasestorage.app", messagingSenderId:"1016400582124", appId:"1:1016400582124:web:9966aa034c532521089cc9" });
+const auth = getAuth(app), db = getFirestore(app);
+const out = document.getElementById("out");
+const log = t => { out.textContent += "\n" + t; };
+let user = null;
+onAuthStateChanged(auth, u => { user = u; });
+
+document.getElementById("go").onclick = async () => {
+  out.textContent = "Test en cours...";
+  await new Promise(r => setTimeout(r, 1000));
+  if (!user) { log("1. Pas connecté. Connecte-toi d'abord sur compte.html"); return; }
+  log("1. Connecté : OK");
+  try {
+    const s = await getDoc(doc(db, "wallets", user.uid));
+    const w = s.exists() ? s.data() : null;
+    log("2. Crédits : " + (w ? (w.ia || 0) + " IA / " + (w.cv || 0) + " CV" : "aucun wallet"));
+  } catch (e) { log("2. Lecture des crédits ECHEC : " + (e.code || e.message)); }
+  try {
+    const t = await user.getIdToken();
+    log("3. Jeton obtenu : OK");
+    const r = await fetch("https://burkina-univ.vercel.app/api/concours", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + t },
+      body: JSON.stringify({ prompt: "Dis bonjour en une phrase.", type: "correction" })
+    });
+    const txt = await r.text();
+    log("4. Réponse du serveur : statut " + r.status + "\n" + txt.slice(0, 600));
+  } catch (e) { log("4. Le serveur ne répond pas (réseau ou CORS) : " + e.message); }
+};
+</script>
+</body>
+</html>
