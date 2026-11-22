@@ -177,6 +177,7 @@ $("logout").onclick = () => signOut(auth);
 // Session persistante : Firebase garde la connexion sur l'appareil
 onAuthStateChanged(auth, async user => {
   $("auth").hidden = !!user; $("space").hidden = !user;
+  hide($("msg2"));                                               
   if (!user) return;
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
