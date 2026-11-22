@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex"/>
+<title>Gestion — BurkinaUniv</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Lora:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{--b0:#060810;--b2:#0f1422;--bc:#192035;--amber:#f5a623;--amber-l:#f7bc5a;--em:#34d399;--t0:#f1f3fa;--t2:#7a839e;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--b0);color:var(--t0);line-height:1.6;font-size:15px;padding:16px 16px 60px}
+.wrap{max-width:640px;margin:0 auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.logo{font-family:'Lora',serif;font-size:20px;font-weight:700}.logo span{color:var(--amber)}
+.back{color:var(--t2);font-size:13px;text-decoration:none}
+h1{font-family:'Lora',serif;font-size:24px}
+.muted{color:var(--t2);font-size:13.5px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--b2);border-radius:12px;padding:4px;margin:16px 0}
+.tab{padding:10px 4px;border:none;border-radius:9px;background:transparent;color:var(--t2);font:700 13.5px 'Outfit',sans-serif;cursor:pointer}
+.tab.on{background:var(--amber);color:#000}
+.view{display:none}.view.on{display:block}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:6px 0 14px}
+.chip{flex:none;padding:7px 14px;border-radius:100px;border:1px solid var(--line2);background:transparent;color:var(--t2);font:700 12.5px 'Outfit',sans-serif;cursor:pointer}
+.chip.on{background:var(--amber);border-color:var(--amber);color:#000}
+input{width:100%;padding:12px 14px;background:var(--b2);border:1px solid var(--line);border-radius:10px;color:var(--t0);font:15px 'Outfit',sans-serif;outline:none;margin-bottom:12px}
+input:focus{border-color:var(--amber)}
+.card{background:var(--bc);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.card h3{font-size:15px;line-height:1.35}
+.card p{font-size:13px;color:var(--t2);margin-top:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{padding:9px 14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--amber),#f97316);color:#000;font:800 13px 'Outfit',sans-serif;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:disabled{opacity:.5}
+.btn.ok{background:linear-gradient(135deg,var(--em),#38bdf8)}
+.btn.ghost{background:transparent;color:var(--t0);border:1px solid var(--line2)}
+.btn.wa{background:linear-gradient(135deg,#25d366,#1da851);color:#fff}
+.badge{display:inline-block;padding:3px 11px;border-radius:100px;font-size:12px;font-weight:700;margin-top:6px}
+.b-att{background:rgba(245,166,35,.12);color:var(--amber-l)}
+.b-ok{background:rgba(16,185,129,.12);color:var(--em)}
+.b-no{background:rgba(239,68,68,.12);color:#f87171}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats div{background:var(--bc);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stats b{display:block;font-family:'Lora',serif;font-size:26px;color:var(--amber)}
+.stats span{font-size:12.5px;color:var(--t2)}
+.err{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 14px;font-size:14px;margin:14px 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="logo">🎓 Burkina<span>Univ</span> · Gestion</div><a class="back" href="espace.html">Mon espace</a></div>
+  <div id="state" class="muted">Vérification de ton accès…</div>
+
+  <div id="app" hidden>
+    <div class="tabs">
+      <button class="tab on" data-v="commandes">Commandes</button>
+      <button class="tab" data-v="users">Étudiants</button>
+      <button class="tab" data-v="stats">Statistiques</button>
+    </div>
+
+    <section class="view on" id="v-commandes">
+      <input id="q-ord" type="search" placeholder="Rechercher : référence, nom, téléphone"/>
+      <div class="chips" id="chips"></div>
+      <div id="orders"></div>
+    </section>
+
+    <section class="view" id="v-users">
+      <input id="q-usr" type="search" placeholder="Rechercher : nom, téléphone, filière"/>
+      <div id="users"></div>
+    </section>
+
+    <section class="view" id="v-stats"><div class="stats" id="stats"></div></section>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({ apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA", authDomain:"burkinauniv.firebaseapp.com", projectId:"burkinauniv", storageBucket:"burkinauniv.firebasestorage.app", messagingSenderId:"1016400582124", appId:"1:1016400582124:web:9966aa034c532521089cc9" });
+const auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+const fcfa = n => (n||0).toLocaleString("fr-FR") + " FCFA";
+const ST = { "en attente":["b-att","En attente"], "confirmé":["b-ok","Confirmé"], "refusé":["b-no","Refusé"], "annulé":["b-no","Annulé"] };
+const FILTERS = ["en attente","confirmé","refusé","annulé","tous"];
+let orders = [], users = new Map(), filt = "en attente";
+
+function el(tag, cls, txt){ const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+const dstr = t => t && t.toDate ? t.toDate().toLocaleString("fr-FR") : "—";
+function fail(msg){ const s = $("state"); s.className = "err"; s.textContent = msg; s.hidden = false; $("app").hidden = true; }
+
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
+}));
+$("q-ord").addEventListener("input", renderOrders);
+$("q-usr").addEventListener("input", renderUsers);
+
+async function load(){
+  const [us, os] = await Promise.all([getDocs(collection(db,"users")), getDocs(collection(db,"achats"))]);
+  users = new Map(); us.forEach(d => users.set(d.id, d.data()));
+  orders = []; os.forEach(d => orders.push(d.data()));
+  orders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+  renderStats(); renderOrders(); renderUsers();
+}
+
+function renderStats(){
+  const ok = orders.filter(o => o.statut === "confirmé");
+  const items = [
+    [users.size,"Étudiants inscrits"], [orders.length,"Commandes"],
+    [orders.filter(o => o.statut === "en attente").length,"En attente"], [ok.length,"Confirmées"],
+    [fcfa(ok.reduce((s,o) => s + (o.prix||0), 0)),"Ventes confirmées"],
+    [orders.filter(o => o.statut === "refusé" || o.statut === "annulé").length,"Refusées / annulées"]
+  ];
+  const box = $("stats"); box.innerHTML = "";
+  items.forEach(([n,l]) => { const d = el("div"); d.appendChild(el("b","",String(n))); d.appendChild(el("span","",l)); box.appendChild(d); });
+}
+
+function renderOrders(){
+  const chips = $("chips"); chips.innerHTML = "";
+  FILTERS.forEach(f => {
+    const n = f === "tous" ? orders.length : orders.filter(o => o.statut === f).length;
+    const b = el("button","chip"+(f===filt?" on":""), f.charAt(0).toUpperCase()+f.slice(1)+" ("+n+")");
+    b.type = "button"; b.onclick = () => { filt = f; renderOrders(); }; chips.appendChild(b);
+  });
+  const q = $("q-ord").value.trim().toLowerCase();
+  const list = $("orders"); list.innerHTML = "";
+  const rows = orders.filter(o => {
+    if (filt !== "tous" && o.statut !== filt) return false;
+    const u = users.get(o.uid) || {};
+    return !q || [o.ref,o.produit,u.nom,u.telephone].join(" ").toLowerCase().includes(q);
+  });
+  if (!rows.length) { list.appendChild(el("p","muted","Aucune commande.")); return; }
+  rows.forEach(o => {
+    const u = users.get(o.uid) || {}, s = ST[o.statut] || ST["en attente"];
+    const c = el("div","card");
+    c.appendChild(el("h3","",o.produit));
+    c.appendChild(el("p","",o.ref + " · " + fcfa(o.prix)));
+    c.appendChild(el("p","","Client : " + (u.nom || "inconnu") + " · " + (u.telephone || "—")));
+    c.appendChild(el("p","",dstr(o.createdAt)));
+    c.appendChild(el("span","badge "+s[0],s[1]));
+    const r = el("div","row");
+    [["confirmé","Confirmer","btn ok"],["refusé","Refuser","btn ghost"],["annulé","Annuler","btn ghost"]].forEach(([st,lab,cls]) => {
+      if (o.statut === st) return;
+      const b = el("button",cls,lab); b.type = "button";
+      b.onclick = () => setStatut(o, st, lab, b); r.appendChild(b);
+    });
+    if (u.telephone) {
+      const a = el("a","btn wa","WhatsApp"); a.target = "_blank"; a.rel = "noopener";
+      a.href = "https://wa.me/226" + u.telephone + "?text=" + encodeURIComponent("Bonjour " + (u.nom||"") + ", concernant ta commande " + o.ref + " (" + o.produit + ").");
+      r.appendChild(a);
+    }
+    c.appendChild(r); list.appendChild(c);
+  });
+}
+
+async function setStatut(o, st, lab, btn){
+  if (!confirm(lab + " la commande " + o.ref + " (" + fcfa(o.prix) + ") ?")) return;
+  btn.disabled = true;
+  try {
+    await updateDoc(doc(db,"achats",o.ref), { statut: st, updatedAt: serverTimestamp() });
+    o.statut = st; renderStats(); renderOrders();
+  } catch (e) { alert("Échec : " + (e.code || e.message)); btn.disabled = false; }
+}
+
+function renderUsers(){
+  const q = $("q-usr").value.trim().toLowerCase();
+  const list = $("users"); list.innerHTML = "";
+  const rows = [...users.entries()].filter(([,u]) => !q || [u.nom,u.telephone,u.universite,u.filiere,u.niveau].join(" ").toLowerCase().includes(q))
+    .sort((a,b) => (b[1].createdAt?.seconds||0) - (a[1].createdAt?.seconds||0));
+  if (!rows.length) { list.appendChild(el("p","muted","Aucun étudiant.")); return; }
+  rows.forEach(([id,u]) => {
+    const n = orders.filter(o => o.uid === id).length;
+    const c = el("div","card");
+    c.appendChild(el("h3","",u.nom || "Sans nom"));
+    c.appendChild(el("p","","Téléphone : " + (u.telephone || "—")));
+    c.appendChild(el("p","",[u.universite,u.filiere,u.niveau].filter(Boolean).join(" · ") || "Profil non renseigné"));
+    c.appendChild(el("p","","Inscrit : " + dstr(u.createdAt) + " · " + n + " commande(s)"));
+    list.appendChild(c);
+  });
+}
+
+onAuthStateChanged(auth, async u => {
+  if (!u) { location.replace("compte.html"); return; }
+  let isAdmin = false;
+  try { isAdmin = (await getDoc(doc(db,"admins",u.uid))).exists(); } catch (e) { return fail("Erreur de vérification : " + (e.code || e.message)); }
+  if (!isAdmin) return fail("Accès refusé : ce compte n'est pas administrateur.");
+  try { await load(); } catch (e) { return fail("Erreur de chargement : " + (e.code || e.message)); }
+  $("state").hidden = true; $("app").hidden = false;
+});
+</script>
+</body>
+</html>
