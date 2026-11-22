@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mon compte — BurkinaUniv</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Lora:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{--b0:#060810;--b2:#0f1422;--bc:#192035;--amber:#f5a623;--amber-l:#f7bc5a;--emerald-l:#34d399;--t0:#f1f3fa;--t2:#7a839e;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--b0);color:var(--t0);min-height:100vh;padding:20px 16px 60px;line-height:1.6;font-size:15px}
+.wrap{max-width:440px;margin:0 auto}
+.back{display:inline-block;color:var(--t2);font-size:13px;text-decoration:none;margin-bottom:18px}
+.logo{font-family:'Lora',serif;font-size:24px;font-weight:700;margin-bottom:22px}
+.logo span{color:var(--amber)}
+.card{background:var(--bc);border:1px solid var(--line2);border-radius:20px;padding:24px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--b2);border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{padding:10px;border:none;border-radius:9px;background:transparent;color:var(--t2);font:700 14px 'Outfit',sans-serif;cursor:pointer}
+.tab.on{background:var(--amber);color:#000}
+label{display:block;font-size:13px;font-weight:600;color:var(--t2);margin:12px 0 5px}
+input,select{width:100%;padding:12px 14px;background:var(--b2);border:1px solid var(--line);border-radius:10px;color:var(--t0);font:15px 'Outfit',sans-serif;outline:none}
+input:focus,select:focus{border-color:var(--amber)}
+.btn{width:100%;margin-top:18px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--amber),#f97316);color:#000;font:800 15px 'Outfit',sans-serif;cursor:pointer}
+.btn:disabled{opacity:.5}
+.ghost{background:transparent;color:var(--t0);border:1px solid var(--line2)}
+.msg{display:none;margin-top:14px;padding:11px 13px;border-radius:10px;font-size:13.5px}
+.msg.err{display:block;background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.msg.ok{display:block;background:rgba(16,185,129,.1);color:var(--emerald-l);border:1px solid rgba(16,185,129,.25)}
+.hint{font-size:12px;color:var(--t2);margin-top:4px}
+.forgot{display:block;text-align:center;margin-top:14px;color:var(--amber-l);font-size:13px;text-decoration:none}
+.hello{font-family:'Lora',serif;font-size:22px;margin-bottom:2px}
+.sub{color:var(--t2);font-size:13px;margin-bottom:10px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="back" href="index.html">← Retour au site</a>
+  <div class="logo">🎓 Burkina<span>Univ</span></div>
+
+  <section class="card" id="auth">
+    <div class="tabs">
+      <button class="tab on" id="tab-login" type="button">Connexion</button>
+      <button class="tab" id="tab-reg" type="button">Créer un compte</button>
+    </div>
+
+    <form id="form-login">
+      <label for="l-tel">Numéro de téléphone</label>
+      <input id="l-tel" type="tel" inputmode="numeric" placeholder="Ex : 05 48 67 41" autocomplete="username" required/>
+      <label for="l-pwd">Mot de passe</label>
+      <input id="l-pwd" type="password" autocomplete="current-password" required/>
+      <button class="btn" type="submit">Se connecter</button>
+      <a class="forgot" id="forgot" href="#" target="_blank" rel="noopener">Mot de passe oublié ?</a>
+    </form>
+
+    <form id="form-reg" hidden>
+      <label for="r-nom">Nom complet *</label>
+      <input id="r-nom" type="text" maxlength="60" autocomplete="name" required/>
+      <label for="r-tel">Numéro de téléphone *</label>
+      <input id="r-tel" type="tel" inputmode="numeric" placeholder="8 chiffres, ex : 05 48 67 41" autocomplete="username" required/>
+      <label for="r-univ">Université (facultatif)</label>
+      <input id="r-univ" type="text" maxlength="60"/>
+      <label for="r-fil">Filière (facultatif)</label>
+      <input id="r-fil" type="text" maxlength="60"/>
+      <label for="r-niv">Niveau d'étude (facultatif)</label>
+      <select id="r-niv"><option value="">—</option><option>Terminale</option><option>L1</option><option>L2</option><option>L3</option><option>Master 1</option><option>Master 2</option><option>Doctorat</option><option>Candidat concours</option></select>
+      <label for="r-pwd">Mot de passe *</label>
+      <input id="r-pwd" type="password" minlength="6" autocomplete="new-password" required/>
+      <div class="hint">6 caractères minimum.</div>
+      <button class="btn" type="submit">Créer mon compte</button>
+    </form>
+    <div class="msg" id="msg"></div>
+  </section>
+
+  <section class="card" id="space" hidden>
+    <div class="hello" id="hello"></div>
+    <div class="sub" id="phone"></div>
+    <form id="form-prof">
+      <label for="p-nom">Nom complet</label>
+      <input id="p-nom" type="text" maxlength="60" required/>
+      <label for="p-univ">Université</label>
+      <input id="p-univ" type="text" maxlength="60"/>
+      <label for="p-fil">Filière</label>
+      <input id="p-fil" type="text" maxlength="60"/>
+      <label for="p-niv">Niveau d'étude</label>
+      <select id="p-niv"><option value="">—</option><option>Terminale</option><option>L1</option><option>L2</option><option>L3</option><option>Master 1</option><option>Master 2</option><option>Doctorat</option><option>Candidat concours</option></select>
+      <button class="btn" type="submit">Enregistrer les modifications</button>
+    </form>
+    <button class="btn ghost" id="logout" type="button">Se déconnecter</button>
+    <div class="msg" id="msg2"></div>
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({ apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA", authDomain:"burkinauniv.firebaseapp.com", projectId:"burkinauniv", storageBucket:"burkinauniv.firebasestorage.app", messagingSenderId:"1016400582124", appId:"1:1016400582124:web:9966aa034c532521089cc9" });
+const auth = getAuth(app);
+const db = getFirestore(app);
+const $ = id => document.getElementById(id);
+
+// Numéro -> 8 chiffres (on retire espaces, +226, 00226)
+function normTel(t){
+  let d = (t||"").replace(/\D/g,"");
+  if (d.startsWith("00226")) d = d.slice(5);
+  else if (d.startsWith("226") && d.length === 11) d = d.slice(3);
+  return d;
+}
+const toEmail = d => d + "@burkinauniv.app";
+
+function show(el, text, type){ el.textContent = text; el.className = "msg " + type; }
+function hide(el){ el.className = "msg"; el.textContent = ""; }
+function errText(e){
+  const c = e && e.code || "";
+  if (c === "auth/email-already-in-use") return "Ce numéro a déjà un compte. Connecte-toi.";
+  if (c === "auth/invalid-credential" || c === "auth/wrong-password" || c === "auth/user-not-found" || c === "auth/invalid-login-credentials") return "Numéro ou mot de passe incorrect.";
+  if (c === "auth/weak-password") return "Mot de passe trop court (6 caractères minimum).";
+  if (c === "auth/too-many-requests") return "Trop d'essais. Réessaie dans quelques minutes.";
+  if (c === "auth/network-request-failed") return "Pas de connexion internet. Réessaie.";
+  if (c === "auth/operation-not-allowed") return "La connexion par mot de passe n'est pas activée dans Firebase.";
+  return "Erreur : " + (c || (e && e.message) || "inconnue");
+}
+
+// Onglets
+function tab(login){
+  $("form-login").hidden = !login; $("form-reg").hidden = login;
+  $("tab-login").classList.toggle("on", login); $("tab-reg").classList.toggle("on", !login);
+  hide($("msg"));
+}
+$("tab-login").onclick = () => tab(true);
+$("tab-reg").onclick = () => tab(false);
+
+// Mot de passe oublié : message WhatsApp prérempli
+$("forgot").addEventListener("click", e => {
+  const d = normTel($("l-tel").value);
+  const txt = "Bonjour, j'ai oublié mon mot de passe BurkinaUniv." + (d ? " Mon numéro : " + d : "");
+  e.currentTarget.href = "https://wa.me/22605486741?text=" + encodeURIComponent(txt);
+});
+
+// Inscription
+$("form-reg").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = e.submitter; hide($("msg"));
+  const nom = $("r-nom").value.trim();
+  const tel = normTel($("r-tel").value);
+  if (nom.length < 3) return show($("msg"), "Entre ton nom complet.", "err");
+  if (tel.length !== 8) return show($("msg"), "Le numéro doit contenir 8 chiffres.", "err");
+  btn.disabled = true;
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, toEmail(tel), $("r-pwd").value);
+    await setDoc(doc(db, "users", cred.user.uid), {
+      nom, telephone: tel,
+      universite: $("r-univ").value.trim(), filiere: $("r-fil").value.trim(), niveau: $("r-niv").value,
+      createdAt: serverTimestamp()
+    });
+  } catch (err) { show($("msg"), errText(err), "err"); }
+  btn.disabled = false;
+});
+
+// Connexion
+$("form-login").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = e.submitter; hide($("msg"));
+  const tel = normTel($("l-tel").value);
+  if (tel.length !== 8) return show($("msg"), "Le numéro doit contenir 8 chiffres.", "err");
+  btn.disabled = true;
+  try { await signInWithEmailAndPassword(auth, toEmail(tel), $("l-pwd").value); }
+  catch (err) { show($("msg"), errText(err), "err"); }
+  btn.disabled = false;
+});
+
+// Déconnexion
+$("logout").onclick = () => signOut(auth);
+
+// Session persistante : Firebase garde la connexion sur l'appareil
+onAuthStateChanged(auth, async user => {
+  $("auth").hidden = !!user; $("space").hidden = !user;
+  if (!user) return;
+  try {
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const p = snap.exists() ? snap.data() : {};
+    $("hello").textContent = "Bonjour " + (p.nom || "");
+    $("phone").textContent = "Téléphone : " + (p.telephone || user.email.split("@")[0]);
+    $("p-nom").value = p.nom || ""; $("p-univ").value = p.universite || "";
+    $("p-fil").value = p.filiere || ""; $("p-niv").value = p.niveau || "";
+  } catch (err) { show($("msg2"), "Impossible de charger ton profil : " + (err.code || err.message), "err"); }
+});
+
+// Modifier le profil
+$("form-prof").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = e.submitter; hide($("msg2")); btn.disabled = true;
+  try {
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      nom: $("p-nom").value.trim(), universite: $("p-univ").value.trim(),
+      filiere: $("p-fil").value.trim(), niveau: $("p-niv").value
+    });
+    $("hello").textContent = "Bonjour " + $("p-nom").value.trim();
+    show($("msg2"), "Profil enregistré.", "ok");
+  } catch (err) { show($("msg2"), "Échec de l'enregistrement : " + (err.code || err.message), "err"); }
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>
