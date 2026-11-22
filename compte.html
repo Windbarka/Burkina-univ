@@ -75,6 +75,7 @@ input:focus,select:focus{border-color:var(--amber)}
   <section class="card" id="space" hidden>
     <div class="hello" id="hello"></div>
     <div class="sub" id="phone"></div>
+    <a class="btn" href="espace.html" style="display:block;text-align:center;text-decoration:none">Aller à mon espace</a>
     <form id="form-prof">
       <label for="p-nom">Nom complet</label>
       <input id="p-nom" type="text" maxlength="60" required/>
@@ -155,6 +156,8 @@ $("form-reg").addEventListener("submit", async e => {
       universite: $("r-univ").value.trim(), filiere: $("r-fil").value.trim(), niveau: $("r-niv").value,
       createdAt: serverTimestamp()
     });
+    location.href = "espace.html";
+    return;
   } catch (err) { show($("msg"), errText(err), "err"); }
   btn.disabled = false;
 });
@@ -166,8 +169,11 @@ $("form-login").addEventListener("submit", async e => {
   const tel = normTel($("l-tel").value);
   if (tel.length !== 8) return show($("msg"), "Le numéro doit contenir 8 chiffres.", "err");
   btn.disabled = true;
-  try { await signInWithEmailAndPassword(auth, toEmail(tel), $("l-pwd").value); }
-  catch (err) { show($("msg"), errText(err), "err"); }
+  try {
+    await signInWithEmailAndPassword(auth, toEmail(tel), $("l-pwd").value);
+    location.href = "espace.html";
+    return;
+  } catch (err) { show($("msg"), errText(err), "err"); }
   btn.disabled = false;
 });
 
@@ -177,7 +183,7 @@ $("logout").onclick = () => signOut(auth);
 // Session persistante : Firebase garde la connexion sur l'appareil
 onAuthStateChanged(auth, async user => {
   $("auth").hidden = !!user; $("space").hidden = !user;
-  hide($("msg2"));                                               
+  hide($("msg2"));
   if (!user) return;
   try {
     const snap = await getDoc(doc(db, "users", user.uid));
