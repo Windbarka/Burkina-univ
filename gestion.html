@@ -28,6 +28,7 @@ input:focus{border-color:var(--amber)}
 .card{background:var(--bc);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
 .card h3{font-size:15px;line-height:1.35}
 .card p{font-size:13px;color:var(--t2);margin-top:2px}
+.card p.gain{color:var(--em)}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .btn{padding:9px 14px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--amber),#f97316);color:#000;font:800 13px 'Outfit',sans-serif;cursor:pointer;text-decoration:none;display:inline-block}
 .btn:disabled{opacity:.5}
@@ -76,7 +77,7 @@ input:focus{border-color:var(--amber)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, updateDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, runTransaction, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({ apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA", authDomain:"burkinauniv.firebaseapp.com", projectId:"burkinauniv", storageBucket:"burkinauniv.firebasestorage.app", messagingSenderId:"1016400582124", appId:"1:1016400582124:web:9966aa034c532521089cc9" });
 const auth = getAuth(app), db = getFirestore(app);
@@ -84,7 +85,10 @@ const $ = id => document.getElementById(id);
 const fcfa = n => (n||0).toLocaleString("fr-FR") + " FCFA";
 const ST = { "en attente":["b-att","En attente"], "confirmé":["b-ok","Confirmé"], "refusé":["b-no","Refusé"], "annulé":["b-no","Annulé"] };
 const FILTERS = ["en attente","confirmé","refusé","annulé","tous"];
-let orders = [], users = new Map(), filt = "en attente";
+// Ce que chaque produit ajoute au compte de l'étudiant quand tu confirmes
+const GAIN = { "ia-10": { ia: 10 }, "cv-ia": { cv: 1 } };
+const GAIN_TXT = { "ia-10": "Confirmer ajoute 10 crédits IA", "cv-ia": "Confirmer ajoute 1 CV IA" };
+let orders = [], users = new Map(), wallets = new Map(), filt = "en attente";
 
 function el(tag, cls, txt){ const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
 const dstr = t => t && t.toDate ? t.toDate().toLocaleString("fr-FR") : "—";
@@ -98,8 +102,9 @@ $("q-ord").addEventListener("input", renderOrders);
 $("q-usr").addEventListener("input", renderUsers);
 
 async function load(){
-  const [us, os] = await Promise.all([getDocs(collection(db,"users")), getDocs(collection(db,"achats"))]);
+  const [us, os, ws] = await Promise.all([getDocs(collection(db,"users")), getDocs(collection(db,"achats")), getDocs(collection(db,"wallets"))]);
   users = new Map(); us.forEach(d => users.set(d.id, d.data()));
+  wallets = new Map(); ws.forEach(d => wallets.set(d.id, d.data()));
   orders = []; os.forEach(d => orders.push(d.data()));
   orders.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
   renderStats(); renderOrders(); renderUsers();
@@ -139,6 +144,7 @@ function renderOrders(){
     c.appendChild(el("p","",o.ref + " · " + fcfa(o.prix)));
     c.appendChild(el("p","","Client : " + (u.nom || "inconnu") + " · " + (u.telephone || "—")));
     c.appendChild(el("p","",dstr(o.createdAt)));
+    if (GAIN_TXT[o.productId]) c.appendChild(el("p","gain", o.credite ? "Crédits déjà ajoutés au compte" : GAIN_TXT[o.productId]));
     c.appendChild(el("span","badge "+s[0],s[1]));
     const r = el("div","row");
     [["confirmé","Confirmer","btn ok"],["refusé","Refuser","btn ghost"],["annulé","Annuler","btn ghost"]].forEach(([st,lab,cls]) => {
@@ -155,12 +161,37 @@ function renderOrders(){
   });
 }
 
+// Change le statut ET ajoute/retire les crédits en une seule opération sûre
 async function setStatut(o, st, lab, btn){
   if (!confirm(lab + " la commande " + o.ref + " (" + fcfa(o.prix) + ") ?")) return;
   btn.disabled = true;
   try {
-    await updateDoc(doc(db,"achats",o.ref), { statut: st, updatedAt: serverTimestamp() });
-    o.statut = st; renderStats(); renderOrders();
+    const oref = doc(db,"achats",o.ref);
+    let newWallet = null, credite = false;
+    await runTransaction(db, async tx => {
+      const os = await tx.get(oref);
+      const cur = os.data();
+      const g = GAIN[cur.productId];
+      credite = !!cur.credite;
+      let wref = null, w = {}, sign = 0;
+      if (g) {
+        wref = doc(db,"wallets",cur.uid);
+        const ws = await tx.get(wref);
+        w = ws.exists() ? ws.data() : {};
+        if (st === "confirmé" && !credite) { sign = 1; credite = true; }
+        else if (st !== "confirmé" && credite) { sign = -1; credite = false; }
+      }
+      if (sign) {
+        const upd = {};
+        for (const k in g) upd[k] = Math.max(0, (w[k]||0) + sign * g[k]);
+        newWallet = { ...w, ...upd };
+        tx.set(wref, { ...newWallet, updatedAt: serverTimestamp() });
+      }
+      tx.update(oref, { statut: st, credite, updatedAt: serverTimestamp() });
+    });
+    o.statut = st; o.credite = credite;
+    if (newWallet) wallets.set(o.uid, newWallet);
+    renderStats(); renderOrders(); renderUsers();
   } catch (e) { alert("Échec : " + (e.code || e.message)); btn.disabled = false; }
 }
 
@@ -172,11 +203,13 @@ function renderUsers(){
   if (!rows.length) { list.appendChild(el("p","muted","Aucun étudiant.")); return; }
   rows.forEach(([id,u]) => {
     const n = orders.filter(o => o.uid === id).length;
+    const w = wallets.get(id) || {};
     const c = el("div","card");
     c.appendChild(el("h3","",u.nom || "Sans nom"));
     c.appendChild(el("p","","Téléphone : " + (u.telephone || "—")));
     c.appendChild(el("p","",[u.universite,u.filiere,u.niveau].filter(Boolean).join(" · ") || "Profil non renseigné"));
     c.appendChild(el("p","","Inscrit : " + dstr(u.createdAt) + " · " + n + " commande(s)"));
+    c.appendChild(el("p","gain","Crédits IA : " + (w.ia||0) + " · CV IA : " + (w.cv||0)));
     list.appendChild(c);
   });
 }
