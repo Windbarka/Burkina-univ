@@ -13,6 +13,31 @@ function uidFromToken(t) {
 const num = f => (f && f.integerValue !== undefined) ? parseInt(f.integerValue, 10)
   : (f && f.doubleValue !== undefined) ? Math.floor(f.doubleValue) : 0;
 
+// Appelle Gemini si GEMINI_API_KEY existe dans Vercel, sinon Groq
+async function askAI(prompt) {
+  const gk = process.env.GEMINI_API_KEY, gm = process.env.GEMINI_MODEL;
+  if (gk) {
+    if (!gm) return { text: '', info: { fournisseur: 'gemini', detail: 'GEMINI_MODEL manquant dans Vercel' } };
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(gm)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gk },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 2048 } })
+    });
+    const d = await r.json().catch(() => ({}));
+    const parts = d && d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts;
+    const text = parts ? parts.map(p => p.text || '').join('') : '';
+    return { text, info: { fournisseur: 'gemini', statut: r.status, modele: gm, detail: (d && d.error && d.error.message) || '' } };
+  }
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
+  });
+  const d = await r.json().catch(() => ({}));
+  const text = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content || '';
+  return { text, info: { fournisseur: 'groq', statut: r.status, cle: process.env.GROQ_API_KEY ? 'presente' : 'ABSENTE', detail: (d && d.error && d.error.message) || '' } };
+}
+
 export default async function handler(req, res) {
   const origin = req.headers.origin;
   if (ALLOWED.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
@@ -47,15 +72,9 @@ export default async function handler(req, res) {
     const key = Object.keys(cost)[0];
     if (have[key] < cost[key]) return res.status(402).json({ error: 'Crédits insuffisants. Achète un pack dans ton espace.' });
 
-    // 2. Appeler l'IA
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
-    });
-    const gdata = await response.json();
-    const text = gdata && gdata.choices && gdata.choices[0] && gdata.choices[0].message && gdata.choices[0].message.content;
-    if (!response.ok || !text) return res.status(502).json({ error: "Erreur du service IA, réessaie." });
+    // 2. Appeler l'IA (Gemini ou Groq)
+    const ai = await askAI(prompt);
+    if (!ai.text) return res.status(502).json({ error: "Erreur du service IA, réessaie.", ...ai.info });
 
     // 3. Débiter les crédits (échoue si les crédits ont changé entre-temps)
     const left = have[key] - cost[key];
@@ -66,7 +85,7 @@ export default async function handler(req, res) {
     );
     if (!pr.ok) return res.status(409).json({ error: 'Débit impossible, réessaie.' });
 
-    return res.status(200).json({ text, ia: key === 'ia' ? left : have.ia, cv: key === 'cv' ? left : have.cv });
+    return res.status(200).json({ text: ai.text, ia: key === 'ia' ? left : have.ia, cv: key === 'cv' ? left : have.cv });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Erreur serveur' });
