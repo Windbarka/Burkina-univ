@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mon espace — BurkinaUniv</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Lora:wght@700&display=swap" rel="stylesheet"/>
+<style>
+:root{--b0:#060810;--b2:#0f1422;--bc:#192035;--amber:#f5a623;--amber-l:#f7bc5a;--em:#34d399;--t0:#f1f3fa;--t2:#7a839e;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--b0);color:var(--t0);line-height:1.6;font-size:15px;padding-bottom:84px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px;max-width:560px;margin:0 auto}
+.logo{font-family:'Lora',serif;font-size:21px;font-weight:700}.logo span{color:var(--amber)}
+.site{color:var(--t2);font-size:13px;text-decoration:none}
+main{max-width:560px;margin:0 auto;padding:0 16px}
+.view{display:none}.view.on{display:block}
+h1{font-family:'Lora',serif;font-size:26px;line-height:1.25}
+h2{font-size:16px;font-weight:800;margin:24px 0 10px}
+.muted{color:var(--t2);font-size:13.5px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.stats div{background:var(--bc);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stats b{display:block;font-family:'Lora',serif;font-size:28px;color:var(--amber)}
+.stats span{font-size:12.5px;color:var(--t2)}
+.tile{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--bc);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;color:var(--t0);text-decoration:none;font:inherit;cursor:pointer}
+.tile .i{font-size:24px}.tile strong{display:block;font-size:15px}.tile small{color:var(--t2);font-size:12.5px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:14px 0}
+.chip{flex:none;padding:8px 16px;border-radius:100px;border:1px solid var(--line2);background:transparent;color:var(--t2);font:700 13px 'Outfit',sans-serif;cursor:pointer}
+.chip.on{background:var(--amber);border-color:var(--amber);color:#000}
+.card{background:var(--bc);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.card .row{display:flex;gap:12px;align-items:flex-start}
+.card .i{font-size:26px}
+.card h3{font-size:15px;line-height:1.35}
+.card p{font-size:13px;color:var(--t2);margin-top:2px}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.price{font-family:'Lora',serif;color:var(--amber);font-size:17px;font-weight:700}
+.btn{padding:10px 18px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--amber),#f97316);color:#000;font:800 14px 'Outfit',sans-serif;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.btn:disabled{opacity:.5}
+.btn.ghost{background:transparent;color:var(--t0);border:1px solid var(--line2)}
+.btn.wa{background:linear-gradient(135deg,#25d366,#1da851);color:#fff}
+.btn.full{width:100%;margin-top:10px;padding:13px}
+.badge{display:inline-block;padding:3px 11px;border-radius:100px;font-size:12px;font-weight:700}
+.b-att{background:rgba(245,166,35,.12);color:var(--amber-l)}
+.b-ok{background:rgba(16,185,129,.12);color:var(--em)}
+.b-no{background:rgba(239,68,68,.12);color:#f87171}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv span:first-child{color:var(--t2)}
+.err{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:11px 13px;font-size:13.5px;margin:12px 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(11,14,26,.97);border-top:1px solid var(--line2);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+nav button{background:none;border:none;color:var(--t2);font:700 11.5px 'Outfit',sans-serif;padding:6px 0;cursor:pointer}
+nav button .i{display:block;font-size:20px}
+nav button.on{color:var(--amber)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;z-index:50}
+.sheet.on{display:flex}
+.sheet>div{background:var(--bc);border-radius:22px 22px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:560px;margin:0 auto}
+.ref{font-family:'Lora',serif;font-size:19px;color:var(--amber);word-break:break-all}
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">🎓 Burkina<span>Univ</span></div><a class="site" href="index.html">Retour au site</a></div>
+<main>
+  <section class="view on" id="v-accueil">
+    <h1 id="hi">Bonjour</h1>
+    <p class="muted">Ton espace étudiant</p>
+    <div class="stats"><div><b id="n-all">0</b><span>Achats</span></div><div><b id="n-ok">0</b><span>Confirmés</span></div></div>
+    <h2>Services disponibles</h2>
+    <button class="tile" data-go="catalogue"><span class="i">📚</span><span><strong>Catalogue</strong><small>Packs concours, filières et abonnements</small></span></button>
+    <a class="tile" href="index.html#ia-concours"><span class="i">🤖</span><span><strong>Entraînement avec l'IA</strong><small>QCM, fiches de révision, corrections</small></span></a>
+    <a class="tile" href="index.html#cv-ia"><span class="i">📄</span><span><strong>CV par IA</strong><small>Génère ton CV professionnel</small></span></a>
+    <div class="err" id="err-home" style="display:none"></div>
+  </section>
+
+  <section class="view" id="v-catalogue">
+    <h1>Catalogue</h1>
+    <div class="chips" id="chips"></div>
+    <div id="list"></div>
+  </section>
+
+  <section class="view" id="v-ressources">
+    <h1>Mes ressources</h1>
+    <p class="muted">Tes commandes et leur statut.</p>
+    <div id="orders" style="margin-top:14px"></div>
+  </section>
+
+  <section class="view" id="v-profil">
+    <h1>Mon profil</h1>
+    <div style="margin-top:12px" id="prof"></div>
+    <a class="btn full ghost" href="compte.html" style="display:block">Modifier mon profil</a>
+    <button class="btn full ghost" id="logout" type="button">Se déconnecter</button>
+  </section>
+</main>
+
+<nav id="nav">
+  <button class="on" data-go="accueil"><span class="i">🏠</span>Accueil</button>
+  <button data-go="catalogue"><span class="i">📚</span>Catalogue</button>
+  <button data-go="ressources"><span class="i">🎒</span>Mes ressources</button>
+  <button data-go="profil"><span class="i">👤</span>Profil</button>
+</nav>
+
+<div class="sheet" id="sheet"><div>
+  <h1 style="font-size:21px">Commande enregistrée</h1>
+  <p class="muted" id="s-nom" style="margin-top:6px"></p>
+  <div class="kv"><span>Prix</span><span id="s-prix"></span></div>
+  <div class="kv"><span>Référence</span><span class="ref" id="s-ref"></span></div>
+  <p class="muted" style="margin-top:12px">Envoie le message WhatsApp pour finaliser. Après vérification de ton paiement, ta commande passe à « Confirmé ».</p>
+  <a class="btn wa full" id="s-wa" href="#" target="_blank" rel="noopener" style="display:block">Envoyer sur WhatsApp</a>
+  <button class="btn ghost full" id="s-close" type="button">Fermer</button>
+</div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({ apiKey:"AIzaSyD4Ox-oQtzaI9UmP1KNCxKp0_FV74vBsoA", authDomain:"burkinauniv.firebaseapp.com", projectId:"burkinauniv", storageBucket:"burkinauniv.firebasestorage.app", messagingSenderId:"1016400582124", appId:"1:1016400582124:web:9966aa034c532521089cc9" });
+const auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+const WA = "22605486741";
+const fcfa = n => n.toLocaleString("fr-FR") + " FCFA";
+
+const P = [
+ {id:"enaref",c:"concours",i:"⚖️",nom:"Pack ENAREF Complet",prix:3500,d:"Annales 2015–2024, corrigés types, culture générale"},
+ {id:"douanes",c:"concours",i:"🛂",nom:"Pack Douanes Burkina",prix:3000,d:"Annales, tests psychotechniques, corrigés"},
+ {id:"police",c:"concours",i:"🚔",nom:"Pack Police Nationale",prix:2500,d:"Sujets officiels, culture générale, psychotechniques"},
+ {id:"gendarmerie",c:"concours",i:"⭐",nom:"Pack Gendarmerie",prix:2500,d:"Annales, corrigés, préparation à l'entretien"},
+ {id:"sante",c:"concours",i:"🏥",nom:"Pack Santé Publique",prix:2500,d:"Sujets récents, sciences naturelles, corrigés"},
+ {id:"fonction-publique",c:"concours",i:"🏛️",nom:"Pack Fonction Publique",prix:2500,d:"Annales, droit administratif, culture générale"},
+ {id:"mpci-l1",c:"filieres",i:"💻",nom:"Pack MPCI — L1 Complet",prix:3000,d:"Algorithmique, C, maths discrètes · 180 pages"},
+ {id:"droit-l1-l2",c:"filieres",i:"⚖️",nom:"Pack Droit — L1 & L2",prix:2500,d:"Droit civil, constitutionnel, administratif, pénal · 210 pages"},
+ {id:"eco-gestion-l1",c:"filieres",i:"📊",nom:"Pack Économie-Gestion L1",prix:2000,d:"Micro, macro, comptabilité, statistiques · 160 pages"},
+ {id:"medecine-pcem1",c:"filieres",i:"🏥",nom:"Pack Médecine — PCEM1",prix:4000,d:"Anatomie, biochimie, physiologie, QCM · 250 pages"},
+ {id:"dev-web",c:"filieres",i:"🖥️",nom:"Pack Développement Web",prix:3500,d:"HTML, CSS, JavaScript, PHP, bases de données · 200 pages"},
+ {id:"lettres",c:"filieres",i:"📖",nom:"Pack Lettres Modernes L1-L2",prix:2000,d:"Littérature africaine, linguistique, dissertation · 140 pages"},
+ {id:"abo-starter",c:"abonnements",i:"🎓",nom:"Abonnement Starter (30 jours)",prix:5000,d:"5 packs PDF au choix, support WhatsApp"},
+ {id:"abo-pro",c:"abonnements",i:"🏆",nom:"Abonnement Pro Étudiant (mensuel)",prix:12000,d:"Tous les packs, orientation, support prioritaire"},
+ {id:"abo-elite",c:"abonnements",i:"👑",nom:"Abonnement Elite — à vie",prix:45000,d:"Tout Pro, accès à vie, futurs packs inclus"}
+];
+const CATS = [["concours","Concours"],["filieres","Filières"],["abonnements","Abonnements"]];
+let cat = "concours", user = null;
+
+function go(v){
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.go === v));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => go(b.dataset.go)));
+
+function el(tag, cls, txt){ const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; }
+
+function renderCatalogue(){
+  const chips = $("chips"); chips.innerHTML = "";
+  CATS.forEach(([k,l]) => { const b = el("button","chip"+(k===cat?" on":""),l); b.type="button"; b.onclick = () => { cat = k; renderCatalogue(); }; chips.appendChild(b); });
+  const list = $("list"); list.innerHTML = "";
+  P.filter(p => p.c === cat).forEach(p => {
+    const card = el("div","card"), row = el("div","row"), t = el("div");
+    row.appendChild(el("div","i",p.i)); t.appendChild(el("h3","",p.nom)); t.appendChild(el("p","",p.d)); row.appendChild(t);
+    const foot = el("div","foot"); foot.appendChild(el("div","price",fcfa(p.prix)));
+    const b = el("button","btn","Acheter"); b.type = "button"; b.onclick = () => buy(p, b); foot.appendChild(b);
+    card.appendChild(row); card.appendChild(foot); list.appendChild(card);
+  });
+}
+
+function newRef(){
+  const d = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let r = "";
+  for (let i=0;i<4;i++) r += c[Math.floor(Math.random()*c.length)];
+  return "BURK-" + d + "-" + r;
+}
+
+async function buy(p, btn){
+  btn.disabled = true; btn.textContent = "Enregistrement…";
+  const ref = newRef();
+  try {
+    await setDoc(doc(db,"achats",ref), { uid:user.uid, ref, productId:p.id, produit:p.nom, prix:p.prix, statut:"en attente", createdAt:serverTimestamp() });
+    $("s-nom").textContent = p.nom; $("s-prix").textContent = fcfa(p.prix); $("s-ref").textContent = ref;
+    const msg = "Bonjour, je souhaite acheter : " + p.nom + "\nPrix : " + fcfa(p.prix) + "\nRéférence : " + ref + "\nIdentifiant : " + user.uid;
+    $("s-wa").href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(msg);
+    $("sheet").classList.add("on");
+    loadOrders();
+  } catch (e) { alert("Impossible d'enregistrer la commande : " + (e.code || e.message)); }
+  btn.disabled = false; btn.textContent = "Acheter";
+}
+$("s-close").onclick = () => $("sheet").classList.remove("on");
+
+const ST = { "en attente":["b-att","En attente"], "confirmé":["b-ok","Confirmé"], "refusé":["b-no","Refusé"], "annulé":["b-no","Annulé"] };
+async function loadOrders(){
+  const box = $("orders");
+  try {
+    const snap = await getDocs(query(collection(db,"achats"), where("uid","==",user.uid)));
+    const rows = []; snap.forEach(d => rows.push(d.data()));
+    rows.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    $("n-all").textContent = rows.length;
+    $("n-ok").textContent = rows.filter(r => r.statut === "confirmé").length;
+    box.innerHTML = "";
+    if (!rows.length) {
+      box.appendChild(el("p","muted","Tu n'as pas encore de commande."));
+      const b = el("button","btn full","Voir le catalogue"); b.type="button"; b.onclick = () => go("catalogue"); box.appendChild(b); return;
+    }
+    rows.forEach(r => {
+      const s = ST[r.statut] || ST["en attente"];
+      const card = el("div","card"); card.appendChild(el("h3","",r.produit));
+      card.appendChild(el("p","","Référence : " + r.ref + " · " + fcfa(r.prix)));
+      const foot = el("div","foot"); foot.appendChild(el("span","badge "+s[0],s[1]));
+      if (r.statut === "confirmé") foot.appendChild(el("span","muted","Fichier envoyé sur WhatsApp"));
+      card.appendChild(foot); box.appendChild(card);
+    });
+  } catch (e) { box.innerHTML = ""; box.appendChild(el("div","err","Impossible de charger tes commandes : " + (e.code || e.message))); }
+}
+
+async function loadProfile(){
+  try {
+    const s = await getDoc(doc(db,"users",user.uid)); const p = s.exists() ? s.data() : {};
+    $("hi").textContent = "Bonjour " + (p.nom || "");
+    const box = $("prof"); box.innerHTML = "";
+    [["Nom",p.nom],["Téléphone",p.telephone],["Université",p.universite],["Filière",p.filiere],["Niveau",p.niveau]].forEach(([k,v]) => {
+      const r = el("div","kv"); r.appendChild(el("span","",k)); r.appendChild(el("span","",v || "—")); box.appendChild(r);
+    });
+  } catch (e) { const x = $("err-home"); x.textContent = "Impossible de charger ton profil : " + (e.code || e.message); x.style.display = "block"; }
+}
+
+$("logout").onclick = async () => { await signOut(auth); location.replace("compte.html"); };
+
+onAuthStateChanged(auth, u => {
+  if (!u) { location.replace("compte.html"); return; }
+  user = u; renderCatalogue(); loadProfile(); loadOrders();
+});
+</script>
+</body>
+</html>
