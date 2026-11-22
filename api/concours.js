@@ -28,14 +28,15 @@ async function askAI(prompt) {
     const text = parts ? parts.map(p => p.text || '').join('') : '';
     return { text, info: { fournisseur: 'gemini', statut: r.status, modele: gm, detail: (d && d.error && d.error.message) || '' } };
   }
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model, max_tokens: 4096, messages: [{ role: 'user', content: prompt }] })
   });
   const d = await r.json().catch(() => ({}));
   const text = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content || '';
-  return { text, info: { fournisseur: 'groq', statut: r.status, cle: process.env.GROQ_API_KEY ? 'presente' : 'ABSENTE', detail: (d && d.error && d.error.message) || '' } };
+  return { text, info: { fournisseur: 'groq', modele: model, statut: r.status, cle: process.env.GROQ_API_KEY ? 'presente' : 'ABSENTE', detail: (d && d.error && d.error.message) || '' } };
 }
 
 export default async function handler(req, res) {
